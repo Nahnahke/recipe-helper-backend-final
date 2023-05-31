@@ -27,16 +27,21 @@ const propertySchema = new Schema({
 const Property = mongoose.model("Property", propertySchema);
 
 // FILTER PROPERTIES ACCORDING TO LOCATION, PRICE, SQM, AND TYPE.
+// FILTER PROPERTIES ACCORDING TO LOCATION, PRICE RANGE, SQM, AND TYPE.
 app.get("/properties", async (req, res) => {
-  const { location, price, squareMeters, type } = req.query;
+  const { location, minPrice, maxPrice, squareMeters, type } = req.query;
   const query = {};
 
   if (location) {
     query.city = { $regex: location, $options: "i" };
   }
 
-  if (price) {
-    query.price = { $lte: parseInt(price) };
+  if (minPrice && maxPrice) {
+    query.price = { $gte: parseInt(minPrice), $lte: parseInt(maxPrice) };
+  } else if (minPrice) {
+    query.price = { $gte: parseInt(minPrice) };
+  } else if (maxPrice) {
+    query.price = { $lte: parseInt(maxPrice) };
   }
 
   if (squareMeters) {
