@@ -23,110 +23,69 @@ app.use(express.json());
 // Schemas and models start here
 const { Schema } = mongoose;
 
-const ThoughtSchema = new Schema({
-  message: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 140
-  },
-  heart: {
-    type: Number,
-    default: 0
-  },
-  createdAt: {
-    type: Date,
-    default: () => Date.now()
-  }
+const propertySchema = new Schema({
+  category: { type: String, required: true },
+  squareMeters: { type: Number, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+  address: { type: String, required: true },
+  city: { type: String, required: true },
+  realtor: { type: String, required: true }
 }); 
 
-const Thought = mongoose.model("Thought", ThoughtSchema);
-
-// Start defining your routes here
+const Property = mongoose.model("Property", propertySchema);
+/*
+// Start defining your routes here, do we need this one????
 app.get("/", (req, res) => {
   res.status(200).send({
     succes: true,
     message: "OK",
     body: {
-      content: "Johannas Happy Thoughs API",
+      content: "FYLL I",
       endpoints: listEndpoints(app)
     }
   });
 });
+*/
 
-// Finding thoughts, sort them in descening (desc) order by creation date and limit thoughts to 20 and execute query
-app.get("/thoughts", async (req, res) => {
-  const thoughts = await Thought.find()
-  .sort({createdAt: 'desc', _id: 'desc' })
-  .limit(20)
-  .exec();
-  res.status(200).json(thoughts);
-});
-
-app.get("/thoughts/id/:id", async (req, res) => {
-  const { id } = req.params;
+// GET ALL PROPERTIES
+app.get("/properties", async (req, res) => {
   try {
-    const singleThought = await Thought.findById(id)
-    if (singleThought) {
-      res.status(200).json(singleThought);
-    } else {
-      res.status(400).json('Not found');
-    }
-    } catch (e) {
-      res.status(400).json('No id found');
-    }
-});
-
-
-app.post("/thoughts", async (req, res) =>{
-  const { message } = req.body;
-    try {
-      const thought = await new Thought({ message }).save();
-      res.status(201).json({
-        succes: true,
-        response: thought,
-        message: "Created with success"
-      });
-    } catch (e) {
-      res.status(400).json({
-        succes: false,
-        response: e,
-        message: "Error occurd whilst posting your thought"
-      });
-    }
-});
-app.patch("/thoughts/:_id/like", async (req, res) => {
-  const { _id } = req.params;
-  try {
-    const thought = await Thought.findByIdAndUpdate(
-      _id, 
-      { $inc: { heart: 1 } }, 
-      { new: true }
-    );
-    
-    res.status(200).json({
-      succes: true,
-      response: thought,
-      message: "Like recieved successfully"
-    });
-  } catch(e) {
-    res.status(400).json({
-      succes: false,
-      response: e,
-      message: "An error occured whilst liking"
-    });
+    const properties = await Property.find();
+    res.json(properties);
+  } catch (e) {
+    res.status(404).json({ error: "Property not found" });
   }
 });
 
+// GET A SPECIFIC PROPERTY VIA ID.
+app.get("/properties/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const singleProperty = await Property.findById(id)
+    if (singleProperty) {
+      res.status(200).json(singleProperty);
+    } else {
+      res.status(404).json('Property not found');
+    }
+    } catch (e) {
+      res.status(500).json({ error: "Internal Server Error"});
+    }
+});
 
+// SEARCH FOR PROPERTIES BY ADDRESS.
+router.get('/properties/search', async (req, res) => {
+  const { address } = req.query;
+  try {
+    const properties = await Property.find({ address: { $regex: address, $options: 'i' } });
+    res.json(properties);
+  } catch (error) {
+    res.status(404).json({ error: 'Property not found' });
+  }
+});
 
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
 
-// POST - create something, PATCH - update, PUT - replace
-// Type is most important. Required is true or false
-// Unique needs a name that is different from the others (that's already in the db)
-// Trim removes unnecessary whitespaces from string
-// Enum is an array of the alloewd values
