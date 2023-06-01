@@ -136,7 +136,7 @@ app.listen(port, () => {
 
 
 
-/* Databasstrukturen för ändringar:
+/* Databasstrukturen för ändringar (DO NOT DELETE!!!!!!):
 
 [
   {
