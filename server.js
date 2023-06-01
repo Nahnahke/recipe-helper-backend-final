@@ -69,7 +69,6 @@ app.get("/housing", async (req, res) => {
 */
 
 // FILTER PROPERTIES ACCORDING TO LOCATION, PRICE RANGE, SQM RANGE, AND TYPE.
-// FILTER PROPERTIES ACCORDING TO LOCATION, PRICE RANGE, SQM RANGE, AND TYPE.
 app.get("/properties", async (req, res) => {
   try {
     const { location, minPrice, maxPrice, minSquareMeters, maxSquareMeters, type } = req.query;
