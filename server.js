@@ -1,8 +1,10 @@
+// IMPORTING REQUIRED MODULES
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
 
+// CONNECTING TO MONGODB
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/final-project-properties";
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.Promise = Promise;
@@ -10,14 +12,17 @@ mongoose.Promise = Promise;
 const port = process.env.PORT || 8080;
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // TO ENABLE CORS FOR ALL ROUTES, ALLOWING CROSS-ORIGIN REQUESTS
+app.use(express.json()); // TO PARSE JSON BODIES OF INCOMING REQUESTS
 
+// WHEN A REQUEST IS MADE TO THE ROOT PATH, IT RETRIEVES A LIST OF AVAILABLE ENDPOINTS IN THE EXPRESS APP USING LISTENDPOINTS(APP)
+// THE LIST OF ENDPOINTS IS THEN SENT AS A JSON RESPONSE
 app.get("/", (req, res) => {
   const endpoints = listEndpoints(app); 
   res.json(endpoints);
 });
 
+// DEFINING THE PROPERTY SCHEMA
 const { Schema } = mongoose;
 
 const propertySchema = new Schema({
