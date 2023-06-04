@@ -101,7 +101,7 @@ app.get("/properties", async (req, res) => {
     }
 
     if (location) {
-      filters.city = { $regex: new RegExp(location, "i") };
+      filters["address.city"] = { $regex: new RegExp(location, "i") };
     }
 
     const properties = await Property.find(filters);
