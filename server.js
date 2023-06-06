@@ -1,10 +1,8 @@
-// IMPORTING REQUIRED MODULES
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
 
-// CONNECTING TO MONGODB
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/final-project-properties";
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.Promise = Promise;
@@ -12,25 +10,24 @@ mongoose.Promise = Promise;
 const port = process.env.PORT || 8080;
 const app = express();
 
-app.use(cors()); // TO ENABLE CORS FOR ALL ROUTES, ALLOWING CROSS-ORIGIN REQUESTS
-app.use(express.json()); // TO PARSE JSON BODIES OF INCOMING REQUESTS
+app.use(cors());
+app.use(express.json());
 
-// WHEN A REQUEST IS MADE TO THE ROOT PATH, IT RETRIEVES A LIST OF AVAILABLE ENDPOINTS IN THE EXPRESS APP USING LISTENDPOINTS(APP)
-// THE LIST OF ENDPOINTS IS THEN SENT AS A JSON RESPONSE
 app.get("/", (req, res) => {
   const endpoints = listEndpoints(app); 
   res.json(endpoints);
 });
 
-// DEFINING THE PROPERTY SCHEMA
 const { Schema } = mongoose;
 
 const propertySchema = new Schema({
   _id: { type: Number, required: true },
   category: { type: String, required: true },
   squareMeters: { type: Number, required: true },
+  unitOfArea: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: Number, required: true },
+  currency: { type: String, required: true },
   address: {
     street: { type: String, required: true },
     streetNumber: { type: Number, required: true },
@@ -46,32 +43,6 @@ const propertySchema = new Schema({
 // Like should be last. 
 
 const Property = mongoose.model("Property", propertySchema);
-/*
-// GET ALL PROPERTIES - Behövs den?
-app.get("/housing", async (req, res) => {
-  const { type } = req.query;
-
-  try {
-    let properties = await Property.find({}); 
-
-    if (type) {
-      properties = properties.filter((property) => {
-        return property.category.toLowerCase() === type.toLowerCase();
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Properties retrieved successfully",
-      body: {
-        housingData: properties,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-*/
 
 // FILTER PROPERTIES ACCORDING TO LOCATION, PRICE RANGE, SQM RANGE, AND TYPE.
 app.get("/properties", async (req, res) => {
@@ -114,11 +85,12 @@ app.get("/properties", async (req, res) => {
 
 
 
+
 // GET A SPECIFIC PROPERTY VIA ID.
 app.get("/properties/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const singleProperty = await Property.findById(id).select("id category squareMeters description price address city realtor");
+    const singleProperty = await Property.findById(id).select("category squareMeters unitOfArea description price currency address.city realtor");
     if (singleProperty) {
       res.status(200).json(singleProperty);
     } else {
@@ -128,6 +100,8 @@ app.get("/properties/:id", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
 
 
 
