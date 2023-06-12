@@ -91,7 +91,7 @@ app.get("/properties", async (req, res) => {
 app.get("/properties/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const singleProperty = await Property.findById(id).select("category squareMeters unitOfArea description price currency address.city realtor");
+    const singleProperty = await Property.findById(id).select("category squareMeters unitOfArea description price currency address.city realtor images mainImg");
     if (singleProperty) {
       res.status(200).json(singleProperty);
     } else {
