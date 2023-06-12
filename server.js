@@ -37,7 +37,8 @@ const propertySchema = new Schema({
   images: [{ type: String }],
   realtor: { type: String, required: true },
   latitude: { type: Number, required: true },
-  longitude: { type: Number, required: true }
+  longitude: { type: Number, required: true },
+  mainImg: { type: String, required: true}
 });
 
 // Like should be last. 
