@@ -69,7 +69,7 @@ app.get("/properties", async (req, res) => {
     }
 
     if (type) {
-      filters.category = { $regex: new RegExp(type, "i") };
+      filters.category = type;
     }
 
     if (location) {
