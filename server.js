@@ -13,6 +13,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+/*
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', 'https://melodic-daffodil-115469.netlify.app/'); //Kolla att det är rätt adress här och att det inte ska vara till API.
+  next();
+});
+*/
+
 app.get("/", (req, res) => {
   const endpoints = listEndpoints(app); 
   res.json(endpoints);
@@ -91,7 +98,7 @@ app.get("/properties", async (req, res) => {
 app.get("/properties/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const singleProperty = await Property.findById(id).select("category squareMeters unitOfArea description price currency address.city realtor images mainImg");
+    const singleProperty = await Property.findById(id).select("category squareMeters unitOfArea description price currency address.street address.city realtor images mainImg");
     if (singleProperty) {
       res.status(200).json(singleProperty);
     } else {
