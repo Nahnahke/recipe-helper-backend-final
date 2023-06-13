@@ -2,8 +2,6 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
-import crypto from "crypto";
-import bcrypt from "bcrypt";
 
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/final-project-properties";
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -15,9 +13,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'https://melodic-daffodil-115469.netlify.app');
-  next();
+app.get("/", (req, res) => {
+  const endpoints = listEndpoints(app); 
+  res.json(endpoints);
 });
 
 const { Schema } = mongoose;
@@ -31,10 +29,10 @@ const propertySchema = new Schema({
   price: { type: Number, required: true },
   currency: { type: String, required: true },
   address: {
-  street: { type: String, required: true },
-  streetNumber: { type: Number, required: true },
-  postalCode: { type: String, required: true },
-  city: { type: String, required: true },
+    street: { type: String, required: true },
+    streetNumber: { type: Number, required: true },
+    postalCode: { type: String, required: true },
+    city: { type: String, required: true },
   },
   images: [{ type: String }],
   realtor: { type: String, required: true },
@@ -45,131 +43,8 @@ const propertySchema = new Schema({
 
 const Property = mongoose.model("Property", propertySchema);
 
-const userSchema = new Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  accessToken: {
-    type: String,
-    default: () => crypto.randomBytes(128).toString("hex")
-  }
-});
-
-const User = mongoose.model("User", userSchema);
-
-const authenticateUser = async (req, res, next) => {
-  const accessToken = req.header("Authorization");
-
-  try {
-    const user = await User.findOne({ accessToken });
-    if (user) {
-      req.user = user;
-      next();
-    } else {
-      res.status(401).json({ success: false, error: "Unauthorized" });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, error: "Internal Server Error" });
-  }
-};
-
-app.get("/", (req, res) => {
-  const endpoints = listEndpoints(app);
-  res.json(endpoints);
-});
-
-app.post("/register", async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const salt = bcrypt.genSaltSync();
-    const newUser = await new User({
-      username: username,
-      password: bcrypt.hashSync(password, salt)
-    }).save();
-    res.status(201).json({
-      success: true,
-      response: {
-      username: newUser.username,
-      id: newUser._id,
-      accessToken: newUser.accessToken
-      }
-    });
-  } catch (e) {
-    res.status(400).json({
-      success: false,
-      response: e
-    });
-  }
-});
-
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user = await User.findOne({ username: username });
-    if (user && bcrypt.compareSync(password, user.password)) {
-      res.status(200).json({
-        success: true,
-        response: {
-          username: user.username,
-          id: user._id,
-          accessToken: user.accessToken
-        }
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        response: "Credentials do not match"
-      });
-    }
-  } catch (e) {
-    res.status(500).json({
-      success: false,
-      response: e
-    });
-  }
-});
-
-app.post("/properties", authenticateUser, async (req, res) => {
-  const propertyData = req.body;
-  try {
-    const newProperty = await new Property(propertyData).save();
-    res.status(201).json(newProperty);
-  } catch (error) {
-    res.status(500).json({ 
-      error: "Internal Server Error" 
-    });
-  }
-});
-
-app.delete("/properties/:id", authenticateUser, async (req, res) => {
-  const { id } = req.params;
-  try {
-    const deletedProperty = await Property.findByIdAndDelete(id);
-    if (deletedProperty) {
-      res.status(200).json({ 
-        success: true, 
-        message: "Property deleted successfully" 
-      });
-    } else {
-      res.status(404).json({ 
-        success: false, 
-        error: "Property not found" 
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ 
-      error: "Internal Server Error" 
-    });
-  }
-});
-
-app.get("/properties", authenticateUser, async (req, res) => {
+// FILTER PROPERTIES ACCORDING TO LOCATION, PRICE RANGE, SQM RANGE, AND TYPE.
+app.get("/properties", async (req, res) => {
   try {
     const { location, minPrice, maxPrice, minSquareMeters, maxSquareMeters, type } = req.query;
 
@@ -204,11 +79,13 @@ app.get("/properties", authenticateUser, async (req, res) => {
     res.status(200).json(properties);
   } catch (error) {
     res.status(500).json({ 
-      error: "Internal Server Error" });
+      error: "Internal Server Error" 
+    });
   }
 });
 
-app.get("/properties/:id", authenticateUser, async (req, res) => {
+// GET A SPECIFIC PROPERTY VIA ID.
+app.get("/properties/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const singleProperty = await Property.findById(id).select("category squareMeters unitOfArea description price currency address.street address.streetNumber address.city realtor images mainImg");
@@ -219,18 +96,15 @@ app.get("/properties/:id", authenticateUser, async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ 
-      error: "Internal Server Error" });
+      error: "Internal Server Error" 
+    });
   }
 });
 
+// Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-
-
-// http://localhost:8080/properties?location=Stockholm&price=10000000&squareMeters=90&type=Apartment
-
-
 
 /* Databasstrukturen för ändringar (DO NOT DELETE!!!!!!):
 
