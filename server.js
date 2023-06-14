@@ -41,7 +41,7 @@ const propertySchema = new Schema({
   mainImg: { type: String, required: true },
   realtorImg: { type: String, required: true },
   eMail: { type: String, required: true },
-  phoneNumber: { type: Number, required: true },
+  phoneNumber: { type: String, required: true },
   headline: { type: String, required: true },
   roomNo: { type: Number, required: true }
 });
