@@ -43,7 +43,7 @@ const propertySchema = new Schema({
   eMail: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   headline: { type: String, required: true },
-  roomNo: { type: Number, required: true }
+  roomNo: { type: String, required: true }
 });
 
 const Property = mongoose.model("Property", propertySchema);
