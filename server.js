@@ -38,7 +38,11 @@ const propertySchema = new Schema({
   realtor: { type: String, required: true },
   latitude: { type: Number, required: true },
   longitude: { type: Number, required: true },
-  mainImg: { type: String, required: true}
+  mainImg: { type: String, required: true },
+  realtorImg: { type: String, required: true },
+  eMail: { type: String, required: true },
+  phoneNumber: { type: Number, required: true },
+  headLine: { type: String, required: true }
 });
 
 const Property = mongoose.model("Property", propertySchema);
@@ -88,7 +92,7 @@ app.get("/properties", async (req, res) => {
 app.get("/properties/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const singleProperty = await Property.findById(id).select("category squareMeters unitOfArea description price currency address.street address.streetNumber address.city realtor images mainImg");
+    const singleProperty = await Property.findById(id).select("category headLine eMail phoneNumber realtorImg squareMeters unitOfArea description price currency address.street address.streetNumber address.city realtor images mainImg");
     if (singleProperty) {
       res.status(200).json(singleProperty);
     } else {
