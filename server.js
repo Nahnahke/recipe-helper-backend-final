@@ -42,7 +42,9 @@ const propertySchema = new Schema({
   realtorImg: { type: String, required: true },
   eMail: { type: String, required: true },
   phoneNumber: { type: Number, required: true },
-  headline: { type: String, required: true }
+  headline: { type: String, required: true },
+  roomNo: { type: Number, required: true },
+  roomType: { type: String, required: true }
 });
 
 const Property = mongoose.model("Property", propertySchema);
